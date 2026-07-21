@@ -1,5 +1,7 @@
 # Codex Dream Skin Manager
 
+**简体中文** | [English](README_EN.md)
+
 一个独立的本地 Web GUI，用于管理同级项目
 [`Codex-Dream-Skin`](../Codex-Dream-Skin/) 的 macOS 主题引擎。
 
