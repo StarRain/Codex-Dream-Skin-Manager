@@ -1,0 +1,44 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  test-and-package:
+    runs-on: macos-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Run checks
+        run: npm run check
+      - name: Build release assets
+        run: npm run build:release
+      - name: Verify release checksums
+        working-directory: dist/release
+        run: shasum -a 256 -c SHA256SUMS
+      - name: Upload release preview
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-preview
+          path: dist/release/
+          if-no-files-found: error
+
+  docker:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+      - name: Validate Compose configuration
+        run: docker compose config -q
+      - name: Build Docker image
+        run: docker build --build-arg VERSION=ci -t codex-dream-skin-manager:ci .

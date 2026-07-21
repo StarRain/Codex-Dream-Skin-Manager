@@ -1,0 +1,139 @@
+#!/bin/bash
+
+set -euo pipefail
+
+SCRIPT_PATH="$0"
+while [ -L "$SCRIPT_PATH" ]; do
+  LINK_DIR="$(cd "$(dirname "$SCRIPT_PATH")" && pwd -P)"
+  LINK_TARGET="$(/usr/bin/readlink "$SCRIPT_PATH")"
+  case "$LINK_TARGET" in
+    /*) SCRIPT_PATH="$LINK_TARGET" ;;
+    *) SCRIPT_PATH="$LINK_DIR/$LINK_TARGET" ;;
+  esac
+done
+SCRIPT_DIR="$(cd "$(dirname "$SCRIPT_PATH")" && pwd -P)"
+PACKAGE_ROOT="$(cd "$SCRIPT_DIR/.." && pwd -P)"
+LABEL="com.starrain.codex-dream-skin-manager"
+PLIST_PATH="${MANAGER_LAUNCH_AGENT_PATH:-$HOME/Library/LaunchAgents/${LABEL}.plist}"
+MANAGER_URL="${MANAGER_URL:-http://127.0.0.1:19341/management.html}"
+RUNTIME_ROOT="${MANAGER_RUNTIME_DIR:-$HOME/Library/Application Support/CodexDreamSkinManager/runtime}"
+LOG_ROOT="${MANAGER_LOG_DIR:-$HOME/Library/Logs/CodexDreamSkinManager}"
+NODE_BIN="${MANAGER_NODE_BIN:-$(command -v node || true)}"
+
+if [ -f "$PACKAGE_ROOT/libexec/src/host-agent.mjs" ]; then
+  SERVER_PATH="$PACKAGE_ROOT/libexec/src/host-agent.mjs"
+  DEFAULT_PUBLIC_ROOT="$PACKAGE_ROOT/share/codex-dream-skin-manager"
+else
+  SERVER_PATH="$PACKAGE_ROOT/src/host-agent.mjs"
+  DEFAULT_PUBLIC_ROOT="$PACKAGE_ROOT/public"
+fi
+
+require_node() {
+  [ -n "$NODE_BIN" ] || { printf 'Node.js 20+ is required.\n' >&2; exit 1; }
+  "$NODE_BIN" -e 'process.exit(Number(process.versions.node.split(".")[0]) >= 20 ? 0 : 1)' || {
+    printf 'Node.js 20+ is required.\n' >&2
+    exit 1
+  }
+}
+
+service_loaded() {
+  /bin/launchctl print "gui/$(/usr/bin/id -u)/$LABEL" >/dev/null 2>&1
+}
+
+start_service() {
+  [ -f "$PLIST_PATH" ] || {
+    printf 'LaunchAgent is not installed: %s\n' "$PLIST_PATH" >&2
+    printf 'Run the project installer first.\n' >&2
+    exit 1
+  }
+  if service_loaded; then
+    /bin/launchctl kickstart -k "gui/$(/usr/bin/id -u)/$LABEL"
+  else
+    /bin/launchctl bootstrap "gui/$(/usr/bin/id -u)" "$PLIST_PATH"
+  fi
+  printf 'Codex Dream Skin Manager started: %s\n' "$MANAGER_URL"
+}
+
+stop_service() {
+  if service_loaded; then
+    /bin/launchctl bootout "gui/$(/usr/bin/id -u)/$LABEL"
+    printf 'Codex Dream Skin Manager stopped.\n'
+  else
+    printf 'Codex Dream Skin Manager is not running.\n'
+  fi
+}
+
+case "${1:-help}" in
+  serve)
+    require_node
+    /bin/mkdir -p "$RUNTIME_ROOT" "$LOG_ROOT"
+    export MANAGER_MODE=native
+    export MANAGER_RUNTIME_DIR="$RUNTIME_ROOT"
+    export MANAGER_PUBLIC_ROOT="${MANAGER_PUBLIC_ROOT:-$DEFAULT_PUBLIC_ROOT}"
+    export MANAGER_AGENT_HOST="${MANAGER_AGENT_HOST:-127.0.0.1}"
+    export MANAGER_AGENT_PORT="${MANAGER_AGENT_PORT:-19341}"
+    exec "$NODE_BIN" "$SERVER_PATH"
+    ;;
+  start)
+    start_service
+    ;;
+  stop)
+    stop_service
+    ;;
+  restart)
+    if service_loaded; then /bin/launchctl bootout "gui/$(/usr/bin/id -u)/$LABEL"; fi
+    start_service
+    ;;
+  status)
+    if /usr/bin/curl --silent --fail --max-time 2 "${MANAGER_URL%/management.html}/healthz" >/dev/null; then
+      printf 'Codex Dream Skin Manager is running: %s\n' "$MANAGER_URL"
+    else
+      printf 'Codex Dream Skin Manager is not responding.\n' >&2
+      exit 1
+    fi
+    ;;
+  open)
+    /usr/bin/open "$MANAGER_URL"
+    ;;
+  logs)
+    /usr/bin/tail -n "${MANAGER_LOG_LINES:-100}" "$LOG_ROOT/manager.log"
+    ;;
+  version|--version|-v)
+    require_node
+    "$NODE_BIN" -e 'const fs=require("fs"),p=require("path"); const roots=[process.argv[1],p.join(process.argv[1],"libexec")]; for(const root of roots){try{console.log("v"+JSON.parse(fs.readFileSync(p.join(root,"package.json"),"utf8")).version);process.exit(0)}catch{}} process.exit(1)' "$PACKAGE_ROOT"
+    ;;
+  update)
+    temporary_script="$(/usr/bin/mktemp -t codex-dream-skin-manager-install.XXXXXX)"
+    trap '/bin/rm -f "$temporary_script"' EXIT
+    /usr/bin/curl --fail --silent --show-error --location "https://raw.githubusercontent.com/StarRain/Codex-Dream-Skin-Manager/main/scripts/install.sh" --output "$temporary_script"
+    /bin/bash "$temporary_script"
+    ;;
+  uninstall)
+    if [ -x "$PACKAGE_ROOT/scripts/uninstall.sh" ]; then
+      exec "$PACKAGE_ROOT/scripts/uninstall.sh" "${@:2}"
+    fi
+    printf 'The uninstall script is not available in this development checkout.\n' >&2
+    exit 1
+    ;;
+  help|--help|-h)
+    cat <<'USAGE'
+Usage: codex-dream-skin-manager <command>
+
+Commands:
+  serve     Run the native manager in the foreground
+  start     Start the installed LaunchAgent
+  stop      Stop the installed LaunchAgent
+  restart   Restart the installed LaunchAgent
+  status    Check the local manager health endpoint
+  open      Open the management page in the default browser
+  logs      Show recent service logs
+  update    Download and run the latest installer
+  uninstall Remove the Shell installation (use --purge to remove manager data)
+  version   Print the installed version
+USAGE
+    ;;
+  *)
+    printf 'Unknown command: %s\n' "$1" >&2
+    exit 2
+    ;;
+esac

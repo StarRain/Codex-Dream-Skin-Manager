@@ -1,9 +1,8 @@
 import fs from "node:fs";
-import fsp from "node:fs/promises";
 import http from "node:http";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { contentTypeFor } from "./lib.mjs";
+import { createStaticHandler } from "./static-server.mjs";
 
 const moduleDir = path.dirname(fileURLToPath(import.meta.url));
 const publicRoot = path.resolve(moduleDir, "../public");
@@ -12,6 +11,7 @@ const agentPort = Number(process.env.MANAGER_AGENT_PORT || 4174);
 const tokenPath = process.env.MANAGER_AGENT_TOKEN_FILE || "/run/secrets/agent.token";
 const agentToken = fs.readFileSync(tokenPath, "utf8").trim();
 const port = Number(process.env.PORT || 19341);
+const serveStatic = createStaticHandler({ publicRoot });
 
 function proxyToAgent(request, response) {
   const upstream = http.request({
@@ -35,45 +35,6 @@ function proxyToAgent(request, response) {
     response.end(body);
   });
   request.pipe(upstream);
-}
-
-async function serveStatic(request, response) {
-  const requestUrl = new URL(request.url, "http://localhost");
-  if (requestUrl.pathname === "/") {
-    response.writeHead(302, {
-      location: "/management.html",
-      "cache-control": "no-store"
-    });
-    return response.end();
-  }
-  if (requestUrl.pathname === "/healthz") {
-    response.writeHead(200, { "content-type": "text/plain; charset=utf-8" });
-    return response.end("ok");
-  }
-  const isAppEntry = requestUrl.pathname === "/management.html";
-  const relative = isAppEntry ? "index.html" : decodeURIComponent(requestUrl.pathname.slice(1));
-  const candidate = path.resolve(publicRoot, relative);
-  if (!candidate.startsWith(`${publicRoot}${path.sep}`)) {
-    response.writeHead(400);
-    return response.end("Bad request");
-  }
-  let filePath = candidate;
-  try {
-    const stat = await fsp.stat(filePath);
-    if (stat.isDirectory()) filePath = path.join(filePath, "index.html");
-  } catch {
-    filePath = path.join(publicRoot, "index.html");
-  }
-  const stat = await fsp.stat(filePath);
-  response.writeHead(200, {
-    "content-type": contentTypeFor(filePath),
-    "content-length": stat.size,
-    "cache-control": filePath.endsWith("index.html") ? "no-cache" : "public, max-age=300",
-    "x-content-type-options": "nosniff",
-    "x-frame-options": "DENY",
-    "referrer-policy": "no-referrer"
-  });
-  fs.createReadStream(filePath).pipe(response);
 }
 
 const server = http.createServer((request, response) => {

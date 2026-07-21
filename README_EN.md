@@ -16,6 +16,7 @@
   <img alt="Node.js" src="https://img.shields.io/badge/Node.js-%E2%89%A520-5fa04e">
   <img alt="Docker Compose" src="https://img.shields.io/badge/Docker-Compose-2496ed">
   <a href="LICENSE"><img alt="License" src="https://img.shields.io/badge/license-MIT-8cff52"></a>
+  <a href="https://github.com/StarRain/Codex-Dream-Skin-Manager/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/StarRain/Codex-Dream-Skin-Manager/actions/workflows/ci.yml/badge.svg"></a>
 </p>
 
 Codex Dream Skin Manager is an independent local Web GUI that manages themes, injection state, and the Codex connection through the macOS scripts supplied by the original project. It neither copies nor modifies the theme engine source code, and it does not modify the official Codex app.
@@ -52,67 +53,93 @@ Codex Dream Skin Manager is an independent local Web GUI that manages themes, in
 
 ## Architecture
 
-Docker Desktop runs Linux containers, which cannot directly execute macOS tools such as `launchctl`, `osascript`, or `sips`, and cannot control Codex on the host. The current deployment therefore combines a Web container with a local Host Agent:
+Homebrew and Shell installations use native integrated mode by default. One loopback-only service hosts the WebUI and API and invokes the local theme scripts:
 
 ```text
 Browser
   │ http://localhost:19341/management.html
   ▼
-Web container (static UI and API proxy)
-  │ Random 256-bit Bearer Token
-  ▼
-Host Agent (local macOS Node.js process, port 4174)
+Codex Dream Skin Manager (127.0.0.1:19341)
+  ├─ Single-file WebUI
+  ├─ Local management API
   │ Allowlisted scripts and argument-array invocation
   ▼
 Codex Dream Skin macOS scripts
 ```
 
-| Component | Location | Purpose |
-| --- | --- | --- |
-| WebUI | Docker, `127.0.0.1:19341` | Serves the management UI and proxies API requests |
-| Host Agent | macOS, port `4174` | Invokes local theme scripts and reads state |
-| Theme Engine | Local macOS host | Injects themes and maintains configuration and CDP connectivity |
+Docker mode remains available. Because a Linux container cannot control macOS applications directly, this mode still combines a Web container with a host Agent authenticated by a random 256-bit token.
 
-## Quick Start
+## Installation
 
 ### Requirements
 
 - macOS
-- Docker Desktop with Docker Compose
 - Node.js 20+ on the host
-- `Codex Dream Skin` installed, or `Codex-Dream-Skin/macos` available in a sibling directory
+- [Codex Dream Skin](https://github.com/Fei-Away/Codex-Dream-Skin) installed
 
-### Start
+### Homebrew (recommended)
+
+```bash
+brew install starrain/tap/codex-dream-skin-manager
+brew services start codex-dream-skin-manager
+```
+
+Upgrade with:
+
+```bash
+brew update
+brew upgrade codex-dream-skin-manager
+```
+
+### Shell Installer
+
+Download and run the installer:
+
+```bash
+curl -fsSLO https://raw.githubusercontent.com/StarRain/Codex-Dream-Skin-Manager/main/scripts/install.sh
+bash install.sh
+```
+
+The installer verifies the GitHub Release SHA-256, installs the native service, and registers a user LaunchAgent. Uninstalling preserves manager data and logs by default:
+
+```bash
+codex-dream-skin-manager uninstall
+```
+
+Pass `--purge` to remove manager runtime data as well. The theme engine and theme library are outside this cleanup scope.
+
+### Docker + Host Agent
+
+Docker mode requires Docker Desktop with Docker Compose:
 
 ```bash
 git clone https://github.com/StarRain/Codex-Dream-Skin-Manager.git
 cd Codex-Dream-Skin-Manager
-chmod +x scripts/start-local.sh scripts/stop-local.sh
 ./scripts/start-local.sh
 ```
 
-Open:
-
-```text
-http://localhost:19341/management.html
-```
-
-You can also use the npm alias:
-
-```bash
-npm start
-```
-
-### Stop
+Stop it with:
 
 ```bash
 ./scripts/stop-local.sh
 ```
 
-Or:
+## Usage
+
+Management page:
+
+```text
+http://localhost:19341/management.html
+```
+
+Native installations provide these commands:
 
 ```bash
-npm stop
+codex-dream-skin-manager status
+codex-dream-skin-manager open
+codex-dream-skin-manager restart
+codex-dream-skin-manager logs
+codex-dream-skin-manager update
 ```
 
 ## Selecting the Theme Engine Directory
@@ -126,14 +153,14 @@ The Host Agent resolves the engine directory in this order:
 Specify the directory manually:
 
 ```bash
-DREAM_SKIN_ENGINE="/absolute/path/to/Codex-Dream-Skin/macos" ./scripts/start-local.sh
+DREAM_SKIN_ENGINE="/absolute/path/to/Codex-Dream-Skin/macos" codex-dream-skin-manager serve
 ```
 
 ## Data and Security
 
 - The Web port binds to `127.0.0.1` only and is not exposed to the local network by default.
-- Every Host Agent request requires a randomly generated 256-bit Bearer Token.
-- The token file uses `0600` permissions and is mounted read-only inside the container.
+- In Docker mode, every Host Agent request requires a randomly generated 256-bit Bearer Token.
+- The Docker token file uses `0600` permissions and is mounted read-only inside the container.
 - The container does not mount `~/.codex` or `~/Library/Application Support`.
 - The API permits only allowlisted actions, scripts, and validated parameters.
 - Write operations require a dedicated request marker to block ordinary cross-site form requests.
@@ -142,16 +169,17 @@ DREAM_SKIN_ENGINE="/absolute/path/to/Codex-Dream-Skin/macos" ./scripts/start-loc
 
 ## Development and Verification
 
-Run unit tests:
+Run the complete checks and build:
 
 ```bash
-npm test
+npm run check
+npm run build:release
 ```
 
-Start the Host Agent only:
+Start the native development server:
 
 ```bash
-npm run agent
+npm run native
 ```
 
 Validate or build the container:
@@ -161,7 +189,7 @@ docker compose config
 docker compose build
 ```
 
-For normal use, run `scripts/start-local.sh`. Starting the Web service by itself also requires the Host Agent address and token file.
+Pushing a `vX.Y.Z` tag makes GitHub Actions produce `management.html`, a macOS archive, SHA-256 checksums, a Homebrew Formula, and a multi-architecture GHCR image.
 
 ## Related Projects
 

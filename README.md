@@ -16,6 +16,7 @@
   <img alt="Node.js" src="https://img.shields.io/badge/Node.js-%E2%89%A520-5fa04e">
   <img alt="Docker Compose" src="https://img.shields.io/badge/Docker-Compose-2496ed">
   <a href="LICENSE"><img alt="License" src="https://img.shields.io/badge/license-MIT-8cff52"></a>
+  <a href="https://github.com/StarRain/Codex-Dream-Skin-Manager/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/StarRain/Codex-Dream-Skin-Manager/actions/workflows/ci.yml/badge.svg"></a>
 </p>
 
 Codex Dream Skin Manager 是一个独立的本地 Web GUI，通过原项目提供的 macOS 脚本管理主题、注入状态与 Codex 连接。它不复制或修改主题引擎源码，也不修改官方 Codex 应用。
@@ -52,67 +53,93 @@ Codex Dream Skin Manager 是一个独立的本地 Web GUI，通过原项目提�
 
 ## 运行架构
 
-Docker Desktop 中运行的是 Linux 容器，不能直接执行 macOS 的 `launchctl`、`osascript`、`sips`，也不能控制宿主机上的 Codex。因此当前部署由 Web 容器和本机 Host Agent 共同组成：
+Homebrew 和 Shell 安装默认使用本机一体化模式，由一个仅监听回环地址的服务同时提供 WebUI、API 和主题脚本调用：
 
 ```text
 浏览器
   │ http://localhost:19341/management.html
   ▼
-Web 容器（静态页面与 API 代理）
-  │ 随机 256-bit Bearer Token
-  ▼
-Host Agent（macOS 本机 Node.js，端口 4174）
+Codex Dream Skin Manager（127.0.0.1:19341）
+  ├─ 单文件 WebUI
+  ├─ 本地管理 API
   │ 固定脚本名与参数数组调用
   ▼
 Codex Dream Skin macOS scripts
 ```
 
-| 组件 | 运行位置 | 用途 |
-| --- | --- | --- |
-| WebUI | Docker，`127.0.0.1:19341` | 提供管理页面并代理 API |
-| Host Agent | macOS，端口 `4174` | 调用本机主题脚本并读取状态 |
-| Theme Engine | macOS 本机 | 注入主题、维护配置与 CDP 连接 |
+Docker 模式继续保留。由于 Linux 容器不能直接控制 macOS 应用，该模式仍使用 Web 容器与宿主机 Agent，并通过随机 256-bit Token 通信。
 
-## 快速开始
+## 安装
 
 ### 环境要求
 
 - macOS
-- Docker Desktop（包含 Docker Compose）
 - 宿主机 Node.js 20+
-- 已安装 `Codex Dream Skin`，或同级目录存在 `Codex-Dream-Skin/macos`
+- 已安装 [Codex Dream Skin](https://github.com/Fei-Away/Codex-Dream-Skin)
 
-### 启动
+### Homebrew（推荐）
+
+```bash
+brew install starrain/tap/codex-dream-skin-manager
+brew services start codex-dream-skin-manager
+```
+
+升级：
+
+```bash
+brew update
+brew upgrade codex-dream-skin-manager
+```
+
+### Shell 安装
+
+下载安装脚本后执行：
+
+```bash
+curl -fsSLO https://raw.githubusercontent.com/StarRain/Codex-Dream-Skin-Manager/main/scripts/install.sh
+bash install.sh
+```
+
+安装器会校验 GitHub Release 的 SHA-256、安装本机服务并注册用户级 LaunchAgent。卸载默认保留管理器数据与日志：
+
+```bash
+codex-dream-skin-manager uninstall
+```
+
+添加 `--purge` 可同时清理管理器运行数据；主题引擎和主题库不在该清理范围内。
+
+### Docker + Host Agent
+
+Docker 方式要求 Docker Desktop 与 Docker Compose：
 
 ```bash
 git clone https://github.com/StarRain/Codex-Dream-Skin-Manager.git
 cd Codex-Dream-Skin-Manager
-chmod +x scripts/start-local.sh scripts/stop-local.sh
 ./scripts/start-local.sh
 ```
 
-打开：
-
-```text
-http://localhost:19341/management.html
-```
-
-也可以使用 npm 别名：
-
-```bash
-npm start
-```
-
-### 停止
+停止：
 
 ```bash
 ./scripts/stop-local.sh
 ```
 
-或：
+## 使用
+
+管理地址：
+
+```text
+http://localhost:19341/management.html
+```
+
+本机安装提供以下命令：
 
 ```bash
-npm stop
+codex-dream-skin-manager status
+codex-dream-skin-manager open
+codex-dream-skin-manager restart
+codex-dream-skin-manager logs
+codex-dream-skin-manager update
 ```
 
 ## 指定主题引擎目录
@@ -126,14 +153,14 @@ Host Agent 按以下顺序解析引擎目录：
 手动指定目录：
 
 ```bash
-DREAM_SKIN_ENGINE="/absolute/path/to/Codex-Dream-Skin/macos" ./scripts/start-local.sh
+DREAM_SKIN_ENGINE="/absolute/path/to/Codex-Dream-Skin/macos" codex-dream-skin-manager serve
 ```
 
 ## 数据与安全
 
 - Web 端口仅绑定 `127.0.0.1`，默认不向局域网开放。
-- Host Agent 的每个请求都必须携带随机生成的 256-bit Bearer Token。
-- 令牌文件权限为 `0600`，容器仅以只读方式挂载。
+- Docker 模式中 Host Agent 的每个请求都必须携带随机生成的 256-bit Bearer Token。
+- Docker 令牌文件权限为 `0600`，容器仅以只读方式挂载。
 - 容器不挂载 `~/.codex` 或 `~/Library/Application Support`。
 - API 只允许固定动作、固定脚本名和经过校验的参数。
 - 写操作还需要专用请求标记，以阻止普通跨站表单请求。
@@ -142,16 +169,17 @@ DREAM_SKIN_ENGINE="/absolute/path/to/Codex-Dream-Skin/macos" ./scripts/start-loc
 
 ## 开发与验证
 
-运行单元测试：
+运行完整检查和构建：
 
 ```bash
-npm test
+npm run check
+npm run build:release
 ```
 
-仅启动 Host Agent：
+启动原生开发服务：
 
 ```bash
-npm run agent
+npm run native
 ```
 
 验证或构建容器：
@@ -161,7 +189,7 @@ docker compose config
 docker compose build
 ```
 
-正常使用建议运行 `scripts/start-local.sh`，因为单独启动 Web 服务时还需要提供 Host Agent 地址和令牌文件。
+发布 `vX.Y.Z` 标签时，GitHub Actions 会生成 `management.html`、macOS 压缩包、SHA-256 校验文件、Homebrew Formula 和多架构 GHCR 镜像。
 
 ## 相关项目
 

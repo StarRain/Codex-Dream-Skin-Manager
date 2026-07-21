@@ -9,7 +9,11 @@
   "type": "module",
   "scripts": {
     "agent": "node src/host-agent.mjs",
+    "native": "MANAGER_MODE=native node src/host-agent.mjs",
     "serve": "node src/web-server.mjs",
+    "build:web": "node scripts/build-management-html.mjs",
+    "build:release": "./scripts/build-release.sh",
+    "check": "npm test && node --check public/app.js && node --check src/host-agent.mjs && node --check src/web-server.mjs && node --check src/static-server.mjs && node --check scripts/build-management-html.mjs && node --check scripts/render-homebrew-formula.mjs && bash -n bin/codex-dream-skin-manager scripts/*.sh",
     "test": "node --test",
     "start": "./scripts/start-local.sh",
     "stop": "./scripts/stop-local.sh"

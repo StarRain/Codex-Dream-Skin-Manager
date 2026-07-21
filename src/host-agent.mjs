@@ -14,19 +14,22 @@ import {
   isPresetThemeId,
   normalizeStatus
 } from "./lib.mjs";
+import { createStaticHandler } from "./static-server.mjs";
 
 const moduleDir = path.dirname(fileURLToPath(import.meta.url));
 const projectRoot = path.resolve(moduleDir, "..");
 const packageMetadata = JSON.parse(fs.readFileSync(path.join(projectRoot, "package.json"), "utf8"));
 const managerVersion = clampText(packageMetadata.version || "unknown", 40);
+const nativeMode = process.env.MANAGER_MODE === "native";
 const repositories = {
   engine: "https://github.com/Fei-Away/Codex-Dream-Skin",
   webui: "https://github.com/StarRain/Codex-Dream-Skin-Manager"
 };
 const runtimeRoot = path.resolve(process.env.MANAGER_RUNTIME_DIR || path.join(projectRoot, ".runtime"));
-const agentHost = process.env.MANAGER_AGENT_HOST || "0.0.0.0";
-const agentPort = Number(process.env.MANAGER_AGENT_PORT || 4174);
+const agentHost = process.env.MANAGER_AGENT_HOST || (nativeMode ? "127.0.0.1" : "0.0.0.0");
+const agentPort = Number(process.env.MANAGER_AGENT_PORT || (nativeMode ? 19341 : 4174));
 const tokenPath = path.resolve(process.env.MANAGER_AGENT_TOKEN_FILE || path.join(runtimeRoot, "agent.token"));
+const publicRoot = path.resolve(process.env.MANAGER_PUBLIC_ROOT || path.join(projectRoot, "public"));
 const stateRoot = path.resolve(process.env.DREAM_SKIN_STATE_ROOT || path.join(os.homedir(), "Library/Application Support/CodexDreamSkinStudio"));
 const installedEngine = path.join(os.homedir(), ".codex/codex-dream-skin-studio");
 const siblingEngine = path.resolve(projectRoot, "../Codex-Dream-Skin/macos");
@@ -40,8 +43,9 @@ const scriptNames = new Set([
   "install-dream-skin-macos.sh"
 ]);
 const logEntries = [];
-const agentToken = fs.readFileSync(tokenPath, "utf8").trim();
-if (agentToken.length < 32) throw new Error("Host Agent token is missing or too short");
+const agentToken = nativeMode ? "" : fs.readFileSync(tokenPath, "utf8").trim();
+if (!nativeMode && agentToken.length < 32) throw new Error("Host Agent token is missing or too short");
+const serveStatic = createStaticHandler({ publicRoot });
 
 function engineRoot() {
   if (requestedEngine) return path.resolve(requestedEngine.replace(/^~/, os.homedir()));
@@ -247,11 +251,13 @@ async function handleRequest(request, response) {
   const requestUrl = new URL(request.url, "http://agent.local");
   const route = requestUrl.pathname;
 
-  const suppliedToken = String(request.headers.authorization || "").replace(/^Bearer\s+/i, "");
-  const expected = Buffer.from(agentToken);
-  const supplied = Buffer.from(suppliedToken);
-  if (expected.length !== supplied.length || !crypto.timingSafeEqual(expected, supplied)) {
-    return sendError(response, 401, "Unauthorized");
+  if (!nativeMode) {
+    const suppliedToken = String(request.headers.authorization || "").replace(/^Bearer\s+/i, "");
+    const expected = Buffer.from(agentToken);
+    const supplied = Buffer.from(suppliedToken);
+    if (expected.length !== supplied.length || !crypto.timingSafeEqual(expected, supplied)) {
+      return sendError(response, 401, "Unauthorized");
+    }
   }
   if (request.method !== "GET" && request.headers["x-manager-request"] !== "1") {
     return sendError(response, 403, "Missing manager request marker");
@@ -318,6 +324,14 @@ async function handleRequest(request, response) {
 await fsp.mkdir(runtimeRoot, { recursive: true, mode: 0o700 });
 
 const server = http.createServer((request, response) => {
+  const requestUrl = new URL(request.url, "http://localhost");
+  if (nativeMode && !requestUrl.pathname.startsWith("/api/") && requestUrl.pathname !== "/health") {
+    return serveStatic(request, response).catch(error => {
+      console.error(error);
+      if (!response.headersSent) response.writeHead(500);
+      response.end("Internal server error");
+    });
+  }
   handleRequest(request, response).catch(error => {
     console.error(error);
     if (!response.headersSent) sendError(response, error.statusCode || 500, error.message || "Internal error");
@@ -326,7 +340,9 @@ const server = http.createServer((request, response) => {
 });
 
 server.listen(agentPort, agentHost, () => {
-  console.log(`Codex Dream Skin Manager host agent ready: ${agentHost}:${agentPort} (token protected)`);
+  const mode = nativeMode ? "native manager" : "host agent";
+  const protection = nativeMode ? "loopback only" : "token protected";
+  console.log(`Codex Dream Skin Manager ${mode} ready: http://${agentHost}:${agentPort}/management.html (${protection})`);
   console.log(`Engine: ${engineRoot()}`);
 });
 

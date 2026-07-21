@@ -1,0 +1,101 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+  packages: write
+
+jobs:
+  release-assets:
+    runs-on: macos-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Validate tag version
+        run: |
+          package_version="$(node -p 'JSON.parse(require("fs").readFileSync("package.json","utf8")).version')"
+          test "v${package_version}" = "${GITHUB_REF_NAME}"
+      - name: Run checks
+        run: npm run check
+      - name: Build release assets
+        run: npm run build:release
+      - name: Verify release checksums
+        working-directory: dist/release
+        run: shasum -a 256 -c SHA256SUMS
+      - name: Publish GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release create "$GITHUB_REF_NAME" dist/release/* --title "$GITHUB_REF_NAME" --generate-notes --verify-tag
+
+  docker:
+    needs: release-assets
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Generate image metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ghcr.io/starrain/codex-dream-skin-manager
+          tags: |
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=raw,value=latest
+      - name: Build and publish image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          build-args: VERSION=${{ github.ref_name }}
+
+  homebrew-tap:
+    needs: release-assets
+    runs-on: ubuntu-latest
+    env:
+      TAP_TOKEN: ${{ secrets.HOMEBREW_TAP_TOKEN }}
+    steps:
+      - name: Skip when tap token is not configured
+        if: env.TAP_TOKEN == ''
+        run: echo "HOMEBREW_TAP_TOKEN is not configured; skipping tap update."
+      - name: Download release formula
+        if: env.TAP_TOKEN != ''
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release download "$GITHUB_REF_NAME" --repo "$GITHUB_REPOSITORY" --pattern codex-dream-skin-manager.rb
+      - name: Update Homebrew tap
+        if: env.TAP_TOKEN != ''
+        env:
+          GH_TOKEN: ${{ secrets.HOMEBREW_TAP_TOKEN }}
+        run: |
+          gh repo clone StarRain/homebrew-tap tap
+          mkdir -p tap/Formula
+          cp codex-dream-skin-manager.rb tap/Formula/codex-dream-skin-manager.rb
+          cd tap
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add Formula/codex-dream-skin-manager.rb
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m "codex-dream-skin-manager ${GITHUB_REF_NAME}"
+          git push
