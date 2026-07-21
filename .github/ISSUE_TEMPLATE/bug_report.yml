@@ -1,0 +1,76 @@
+name: Bug Report / 缺陷报告
+description: Report a reproducible problem / 报告可复现的问题
+title: "[Bug]: "
+labels:
+  - bug
+body:
+  - type: markdown
+    attributes:
+      value: |
+        感谢反馈。请先搜索现有 Issue，并移除日志中的令牌、个人路径和敏感信息。
+        Thank you for the report. Search existing issues first and remove tokens, personal paths, and sensitive data from logs.
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area / 模块
+      options:
+        - Overview / 概览
+        - Themes / 主题库
+        - Logs / 操作记录
+        - System information / 系统信息
+        - Host Agent
+        - Docker or startup scripts / Docker 或启动脚本
+        - Other / 其他
+    validations:
+      required: true
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem / 问题描述
+      description: What happened, and what did you expect instead? / 实际发生了什么，预期结果是什么？
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Reproduction steps / 复现步骤
+      placeholder: |
+        1. Open ...
+        2. Click ...
+        3. Observe ...
+    validations:
+      required: true
+  - type: input
+    id: manager-version
+    attributes:
+      label: Manager version / 管理器版本
+      placeholder: v1.0.0
+    validations:
+      required: true
+  - type: input
+    id: environment
+    attributes:
+      label: Environment / 环境
+      description: macOS, Node.js, Docker Desktop, and Codex versions / macOS、Node.js、Docker Desktop 与 Codex 版本
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Relevant logs / 相关日志
+      description: Remove tokens, usernames, and personal paths before posting. / 提交前请移除令牌、用户名和个人路径。
+      render: shell
+  - type: textarea
+    id: screenshots
+    attributes:
+      label: Screenshots / 截图
+      description: Drag screenshots here when they help explain the problem. / 如果有助于说明问题，可将截图拖到这里。
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Checklist / 检查项
+      options:
+        - label: I searched existing issues. / 我已搜索现有 Issue。
+          required: true
+        - label: I removed secrets and personal information. / 我已移除密钥和个人信息。
+          required: true

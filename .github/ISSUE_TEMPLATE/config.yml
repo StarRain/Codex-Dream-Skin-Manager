@@ -1,0 +1,5 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Contribution Guide / 贡献指南
+    url: https://github.com/StarRain/Codex-Dream-Skin-Manager/blob/main/CONTRIBUTING.md
+    about: Read the contribution workflow before submitting code. / 提交代码前请阅读贡献流程。

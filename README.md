@@ -168,6 +168,10 @@ docker compose build
 - [Codex Dream Skin](https://github.com/Fei-Away/Codex-Dream-Skin)：主题引擎、macOS 脚本与预设主题
 - [Codex Dream Skin Manager](https://github.com/StarRain/Codex-Dream-Skin-Manager)：本地管理界面与 Host Agent
 
+## 参与贡献
+
+欢迎提交 Bug 修复、功能代码、测试、文档和翻译。较大的改动请先创建 Feature Request 讨论范围，再按照[贡献指南](CONTRIBUTING.md)提交 Pull Request。
+
 ## 开源协议
 
 本项目基于 [MIT License](LICENSE) 开源，Copyright (c) 2026 StarRain。

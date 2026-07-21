@@ -168,6 +168,10 @@ For normal use, run `scripts/start-local.sh`. Starting the Web service by itself
 - [Codex Dream Skin](https://github.com/Fei-Away/Codex-Dream-Skin): theme engine, macOS scripts, and preset themes
 - [Codex Dream Skin Manager](https://github.com/StarRain/Codex-Dream-Skin-Manager): local management UI and Host Agent
 
+## Contributing
+
+Bug fixes, features, tests, documentation, and translations are welcome. For substantial changes, open a Feature Request to discuss scope first, then follow the [contribution guide](CONTRIBUTING_EN.md) when submitting a Pull Request.
+
 ## License
 
 This project is released under the [MIT License](LICENSE), Copyright (c) 2026 StarRain.
