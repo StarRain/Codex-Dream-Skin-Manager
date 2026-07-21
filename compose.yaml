@@ -1,0 +1,25 @@
+services:
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: codex-dream-skin-manager:local
+    container_name: codex-dream-skin-manager
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:19341:19341"
+    volumes:
+      - ./.runtime/agent.token:/run/secrets/agent.token:ro
+    environment:
+      MANAGER_AGENT_HOST: host.docker.internal
+      MANAGER_AGENT_PORT: "4174"
+      MANAGER_AGENT_TOKEN_FILE: /run/secrets/agent.token
+      PORT: "19341"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:19341/healthz').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+      start_period: 5s

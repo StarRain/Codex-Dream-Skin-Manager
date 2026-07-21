@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="dark">
+  <title>Codex Dream Skin Manager</title>
+  <meta name="description" content="Codex Dream Skin Manager 本地主题管理器">
+  <link rel="icon" type="image/png" href="/assets/codex-dream-skin-manager-logo-transparent.png?v=1.0.0">
+  <link rel="stylesheet" href="/styles.css?v=1.0.0-ui2">
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar">
+      <div class="brand">
+        <img class="brand-mark" src="/assets/codex-dream-skin-manager-logo-transparent.png?v=1.0.0" alt="">
+        <div>
+          <strong>CODEX DREAM SKIN</strong>
+          <small><span>MANAGER</span><b id="brand-version">v—</b></small>
+        </div>
+      </div>
+
+      <nav aria-label="主导航">
+        <button class="nav-item active" data-section="overview"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>概览</button>
+        <button class="nav-item" data-section="themes"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3-9 5 9 5 9-5-9-5Z"/><path d="m3 12 9 5 9-5"/><path d="m3 16 9 5 9-5"/></svg>主题库 <b id="theme-count">0</b></button>
+        <button class="nav-item" data-section="logs"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/><path d="M12 7v5l3 2"/></svg>操作记录</button>
+        <button class="nav-item" data-section="settings"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="2"/><rect x="9" y="9" width="6" height="6"/><path d="M9 1v3M15 1v3M9 20v3M15 20v3M20 9h3M20 15h3M1 9h3M1 15h3"/></svg>系统信息</button>
+      </nav>
+
+      <div class="engine-mini" id="engine-mini">
+        <i></i>
+        <div><strong>正在连接</strong><small>宿主机代理</small></div>
+      </div>
+      <p class="local-only">仅在本机 <code>127.0.0.1</code> 可访问</p>
+    </aside>
+
+    <main>
+      <header class="topbar">
+        <div class="breadcrumbs"><span>Codex Dream Skin Manager</span><b>/</b><strong id="page-name">概览</strong></div>
+        <div class="top-actions">
+          <span class="live-pill" id="live-pill"><i></i><span>检测中</span></span>
+          <div class="preference-toolbar">
+            <button class="toolbar-button" id="refresh-button" aria-label="刷新数据" title="刷新"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 6v5h-5"/><path d="M19 11a7 7 0 1 0 1 5"/></svg></button>
+            <div class="preference-menu-wrap">
+              <button class="toolbar-button" id="language-toggle" type="button" aria-label="切换语言" aria-expanded="false" aria-controls="language-menu" title="语言"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3 12h18"/><path d="M12 3c2.5 2.5 3.8 5.5 3.8 9S14.5 18.5 12 21"/><path d="M12 3c-2.5 2.5-3.8 5.5-3.8 9s1.3 6.5 3.8 9"/></svg></button>
+              <div class="preference-popover language-popover hidden" id="language-menu" role="menu">
+                <button type="button" class="language-option" data-locale="zh" role="menuitemradio"><span>中文</span><b>✓</b></button>
+                <button type="button" class="language-option" data-locale="en" role="menuitemradio"><span>English</span><b>✓</b></button>
+              </div>
+            </div>
+            <div class="preference-menu-wrap">
+              <button class="toolbar-button" id="theme-toggle" type="button" aria-label="切换亮暗主题" aria-expanded="false" aria-controls="theme-menu" title="外观"><span id="theme-icon" aria-hidden="true"></span></button>
+              <div class="preference-popover theme-popover hidden" id="theme-menu" role="menu">
+                <button type="button" class="theme-option" data-color-theme="system" role="menuitemradio"><span class="theme-preview system-preview"><i></i><i></i></span><strong>跟随系统</strong><b>✓</b></button>
+                <button type="button" class="theme-option" data-color-theme="light" role="menuitemradio"><span class="theme-preview light-preview"><i></i></span><strong>亮色</strong><b>✓</b></button>
+                <button type="button" class="theme-option" data-color-theme="dark" role="menuitemradio"><span class="theme-preview dark-preview"><i></i></span><strong>暗色</strong><b>✓</b></button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <section class="page active" id="page-overview">
+        <div class="hero">
+          <div class="hero-copy">
+            <span class="eyebrow">CODEX 桌面端 · 本地主题引擎</span>
+            <h1>让工作台，拥有<br><em>今天的氛围。</em></h1>
+            <p>使用 Codex Dream Skin Manager 管理主题，运行状态全部留在你的 Mac。</p>
+            <div class="hero-actions">
+              <button class="primary action-button" data-action="apply">应用当前皮肤 <span>→</span></button>
+              <button class="secondary action-button" data-action="pause">暂停注入</button>
+            </div>
+          </div>
+          <div class="hero-orbit" aria-hidden="true">
+            <div class="orbit orbit-one"></div><div class="orbit orbit-two"></div>
+            <div class="core"><span>DS</span><small>ONLINE</small></div>
+            <div class="orbit-label label-one">LOCAL CDP</div>
+            <div class="orbit-label label-two">127.0.0.1</div>
+          </div>
+        </div>
+
+        <div class="status-grid">
+          <article class="status-card accent-green">
+            <div class="status-icon">✦</div>
+            <span>皮肤状态</span>
+            <strong id="skin-status">检测中</strong>
+            <small id="active-theme">—</small>
+          </article>
+          <article class="status-card accent-blue">
+            <div class="status-icon">›_</div>
+            <span>Codex</span>
+            <strong id="codex-status">检测中</strong>
+            <small id="cdp-status">—</small>
+          </article>
+          <article class="status-card accent-violet">
+            <div class="status-icon">◇</div>
+            <span>注入器</span>
+            <strong id="injector-status">检测中</strong>
+            <small>仅连接本机回环地址</small>
+          </article>
+        </div>
+
+        <div class="overview-row">
+          <article class="panel quick-panel">
+            <div class="panel-title"><div><span>快速控制</span><small>引擎控制</small></div></div>
+            <button class="control-row action-button" data-action="apply"><span class="control-symbol green">▶</span><span><strong>应用皮肤</strong><small>启动或重新连接 Codex Dream Skin 引擎</small></span><b>→</b></button>
+            <button class="control-row action-button" data-action="pause"><span class="control-symbol amber">Ⅱ</span><span><strong>暂停皮肤</strong><small>移除当前注入，保持 Codex 运行</small></span><b>→</b></button>
+            <button class="control-row danger" id="restore-button"><span class="control-symbol red">↶</span><span><strong>恢复官方外观</strong><small>恢复基础配置并正常重启 Codex</small></span><b>→</b></button>
+          </article>
+          <article class="panel recent-panel">
+            <div class="panel-title"><div><span>最近操作</span><small>活动</small></div><button data-section-jump="logs">查看全部</button></div>
+            <div id="recent-log" class="recent-log"><div class="empty-inline">还没有操作记录</div></div>
+          </article>
+        </div>
+      </section>
+
+      <section class="page" id="page-themes">
+        <div class="page-heading"><div><span class="eyebrow">本地主题库</span><h2>主题库</h2><p>预设与自定义主题都保存在本机。</p></div></div>
+        <div class="theme-grid" id="theme-grid"></div>
+        <div class="empty-state hidden" id="theme-empty"><div><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3-9 5 9 5 9-5-9-5Z"/><path d="m3 12 9 5 9-5"/><path d="m3 16 9 5 9-5"/></svg></div><h3>主题库还是空的</h3><p>请先安装带有预设主题的 Codex Dream Skin 引擎。</p></div>
+      </section>
+
+      <section class="page" id="page-logs">
+        <div class="page-heading"><div><span class="eyebrow">本地操作记录</span><h2>操作记录</h2><p>显示本次宿主机代理运行期间的命令结果。</p></div><button class="secondary" id="refresh-logs">刷新记录</button></div>
+        <div class="log-list" id="log-list"></div>
+      </section>
+
+      <section class="page" id="page-settings">
+        <div class="page-heading"><div><span class="eyebrow">系统信息</span><h2>系统信息</h2><p>查看当前版本、运行环境与项目资源。</p></div></div>
+        <div class="settings-grid">
+          <article class="panel setting-card"><div class="setting-head"><span class="big-dot" id="engine-dot"></span><div><small>CODEX DREAM SKIN MANAGER</small><h3 id="engine-title">正在检测</h3></div></div><dl><div><dt>管理器版本</dt><dd id="manager-version">—</dd></div><div><dt>运行平台</dt><dd id="platform-name">—</dd></div><div><dt>引擎目录</dt><dd id="engine-path">—</dd></div><div><dt>状态目录</dt><dd id="state-path">—</dd></div></dl></article>
+          <article class="panel architecture-card"><span class="eyebrow">本地架构</span><div class="architecture-flow"><div><b>网页管理界面</b><small>Docker · 127.0.0.1:19341</small></div><i>→</i><div><b>宿主机代理</b><small>256 位令牌 · 端口 4174</small></div><i>→</i><div><b>皮肤引擎</b><small>macOS 脚本 · 本地 CDP</small></div></div><p>容器无法直接操作 macOS 应用，因此所有系统调用都由带随机密钥认证的最小宿主机代理完成。原项目文件保持不变。</p></article>
+          <article class="panel repository-card">
+            <div class="quick-links-head"><h3>快捷链接</h3><p>访问项目仓库，获取源码、帮助和更新。</p></div>
+            <div class="repo-links">
+              <a id="engine-repository" class="repo-link" href="https://github.com/Fei-Away/Codex-Dream-Skin" target="_blank" rel="noreferrer"><span class="repo-icon"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3.3-.4 6.8-1.6 6.8-7A5.4 5.4 0 0 0 19.4 4 5 5 0 0 0 19.3.5S18.2.1 15 1.8a13.4 13.4 0 0 0-7 0C4.8.1 3.7.5 3.7.5A5 5 0 0 0 3.6 4a5.4 5.4 0 0 0-1.4 3.7c0 5.3 3.5 6.5 6.8 7C8.2 15.6 8 16.6 8 18v4"/><path d="M8 19c-3 .9-3-1.5-4-2"/></svg></span><span class="repo-copy"><span class="repo-title"><strong>主程序仓库</strong><svg class="ui-icon external-link-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></svg></span><small>Codex Dream Skin · 主题引擎与预设</small></span></a>
+              <a id="webui-repository" class="repo-link" href="https://github.com/StarRain/Codex-Dream-Skin-Manager" target="_blank" rel="noreferrer"><span class="repo-icon"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m8 9-3 3 3 3"/><path d="m16 9 3 3-3 3"/></svg></span><span class="repo-copy"><span class="repo-title"><strong>WebUI 仓库</strong><svg class="ui-icon external-link-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></svg></span><small>Codex Dream Skin Manager · 本地管理界面</small></span></a>
+            </div>
+          </article>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <div class="busy hidden" id="busy"><div class="loader"></div><strong id="busy-title">正在处理</strong><small>部分操作可能会重启 Codex，请稍候</small></div>
+  <div class="toast-stack" id="toast-stack" aria-live="polite"></div>
+  <dialog id="confirm-dialog"><div class="dialog-mark">↶</div><h3>恢复官方外观？</h3><p>这会停止注入器、恢复基础主题配置并重启 Codex。你的本地主题库不会被删除。</p><div><button class="secondary" id="cancel-restore">取消</button><button class="danger-fill" id="confirm-restore">恢复并重启</button></div></dialog>
+  <dialog id="delete-theme-dialog"><div class="dialog-mark">×</div><h3>删除这个主题？</h3><p>主题“<strong id="delete-theme-name"></strong>”及其本地文件将被永久删除，此操作无法撤销。</p><div><button class="secondary" id="cancel-delete-theme">取消</button><button class="danger-fill" id="confirm-delete-theme">确认删除</button></div></dialog>
+  <script type="module" src="/app.js?v=1.0.0-ui2"></script>
+</body>
+</html>

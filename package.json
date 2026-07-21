@@ -1,0 +1,20 @@
+{
+  "name": "codex-dream-skin-manager",
+  "version": "1.0.0",
+  "private": true,
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/StarRain/Codex-Dream-Skin-Manager.git"
+  },
+  "type": "module",
+  "scripts": {
+    "agent": "node src/host-agent.mjs",
+    "serve": "node src/web-server.mjs",
+    "test": "node --test",
+    "start": "./scripts/start-local.sh",
+    "stop": "./scripts/stop-local.sh"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
