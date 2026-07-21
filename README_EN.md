@@ -1,90 +1,143 @@
-# Codex Dream Skin Manager
+<p align="center">
+  <img src="public/assets/codex-dream-skin-manager-logo-transparent.png" width="112" alt="Codex Dream Skin Manager Logo">
+</p>
 
-[简体中文](README.md) | **English**
+<h1 align="center">Codex Dream Skin Manager</h1>
 
-An independent local Web GUI for managing the macOS theme engine provided by the sibling
-[`Codex-Dream-Skin`](../Codex-Dream-Skin/) project.
+<p align="center">A local theme management panel for Codex Dream Skin on macOS.</p>
 
-This project does not modify or copy the source code of the original project, nor does it modify the official Codex app. It only calls the script interfaces already provided by the original project and reads the themes and runtime state maintained by it.
+<p align="center">
+  <a href="README.md">简体中文</a> · <strong>English</strong>
+</p>
 
-## Why a Host Agent Is Required
+<p align="center">
+  <img alt="Version" src="https://img.shields.io/badge/version-v1.0.0-8cff52">
+  <img alt="Platform" src="https://img.shields.io/badge/platform-macOS-11151d">
+  <img alt="Node.js" src="https://img.shields.io/badge/Node.js-%E2%89%A520-5fa04e">
+  <img alt="Docker Compose" src="https://img.shields.io/badge/Docker-Compose-2496ed">
+</p>
 
-Docker Desktop runs Linux containers, which cannot directly execute macOS tools such as `launchctl`, `osascript`, or `sips`, and cannot control Codex on the host. To make the Docker deployment functional, the project is split into two parts:
+Codex Dream Skin Manager is an independent local Web GUI that manages themes, injection state, and the Codex connection through the macOS scripts supplied by the original project. It neither copies nor modifies the theme engine source code, and it does not modify the official Codex app.
+
+> The current release targets macOS only and requires the [Codex Dream Skin](https://github.com/Fei-Away/Codex-Dream-Skin) theme engine.
+
+## Preview
+
+![Codex Dream Skin Manager overview](docs/images/overview.jpg)
+
+## Core Capabilities
+
+### Theme Management
+
+- Browse local preset and custom themes
+- Preview theme backgrounds and identify the active theme
+- Apply or reapply a theme with one click
+- Delete custom themes with confirmation
+- Protect preset themes and the active theme from accidental deletion
+
+### Runtime Status
+
+- Inspect the skin session, Codex, CDP, and injector state
+- Apply the skin, pause injection, or restore the official appearance
+- Review operation records from the current Host Agent lifecycle
+- Manually refresh configuration, runtime state, themes, and logs
+
+### User Experience
+
+- Simplified Chinese and English UI
+- System, light, and dark appearance modes
+- Local system information, version display, and repository shortcuts
+- Default entry point: `http://localhost:19341/management.html`
+
+## Architecture
+
+Docker Desktop runs Linux containers, which cannot directly execute macOS tools such as `launchctl`, `osascript`, or `sips`, and cannot control Codex on the host. The current deployment therefore combines a Web container with a local Host Agent:
 
 ```text
 Browser
   │ http://localhost:19341/management.html
   ▼
-Web container (serves the UI and proxies API requests only)
-  │ Random 256-bit token authentication
+Web container (static UI and API proxy)
+  │ Random 256-bit Bearer Token
   ▼
-Host Agent (local Node.js process on a dedicated control port)
-  │ Invokes executable and argument arrays without shell command concatenation
+Host Agent (local macOS Node.js process, port 4174)
+  │ Allowlisted scripts and argument-array invocation
   ▼
-Codex-Dream-Skin/macOS scripts
+Codex Dream Skin macOS scripts
 ```
 
-- The Web port is bound to `127.0.0.1` only and is not accessible from the local network.
-- Every Host Agent request requires a randomly generated 256-bit Bearer Token. The token file uses `0600` permissions and is mounted read-only inside the container.
-- The container does not mount `~/.codex` or `~/Library/Application Support`. Theme images are read by the Agent under controls defined by each theme manifest.
+| Component | Location | Purpose |
+| --- | --- | --- |
+| WebUI | Docker, `127.0.0.1:19341` | Serves the management UI and proxies API requests |
+| Host Agent | macOS, port `4174` | Invokes local theme scripts and reads state |
+| Theme Engine | Local macOS host | Injects themes and maintains configuration and CDP connectivity |
 
-## Local Startup
+## Quick Start
 
-Requirements:
+### Requirements
 
 - macOS
 - Docker Desktop with Docker Compose
 - Node.js 20+ on the host
-- `Codex-Dream-Skin/macos` installed or available in the sibling project directory
+- `Codex Dream Skin` installed, or `Codex-Dream-Skin/macos` available in a sibling directory
 
-First startup:
+### Start
 
 ```bash
+git clone https://github.com/StarRain/Codex-Dream-Skin-Manager.git
+cd Codex-Dream-Skin-Manager
 chmod +x scripts/start-local.sh scripts/stop-local.sh
 ./scripts/start-local.sh
 ```
 
-Then open:
+Open:
 
 ```text
 http://localhost:19341/management.html
 ```
 
-To stop:
+You can also use the npm alias:
+
+```bash
+npm start
+```
+
+### Stop
 
 ```bash
 ./scripts/stop-local.sh
 ```
 
-You can also use the npm aliases:
+Or:
 
 ```bash
-npm start
 npm stop
 ```
 
-## Engine Directory Resolution
+## Selecting the Theme Engine Directory
 
-The Host Agent checks the following locations in order:
+The Host Agent resolves the engine directory in this order:
 
 1. The `DREAM_SKIN_ENGINE` environment variable
 2. The default installation directory: `~/.codex/codex-dream-skin-studio`
 3. The sibling development directory: `../Codex-Dream-Skin/macos`
 
-To specify a directory explicitly:
+Specify the directory manually:
 
 ```bash
 DREAM_SKIN_ENGINE="/absolute/path/to/Codex-Dream-Skin/macos" ./scripts/start-local.sh
 ```
 
-## Features
+## Data and Security
 
-- View Skin, Codex, CDP, and injector status
-- Apply or pause the skin and restore the official appearance
-- Browse the local theme library and preview images
-- Switch themes with one click
-- Delete themes that are no longer needed, with confirmation; switch away from the active theme before deleting it
-- View command output from the current Agent lifecycle
+- The Web port binds to `127.0.0.1` only and is not exposed to the local network by default.
+- Every Host Agent request requires a randomly generated 256-bit Bearer Token.
+- The token file uses `0600` permissions and is mounted read-only inside the container.
+- The container does not mount `~/.codex` or `~/Library/Application Support`.
+- The API permits only allowlisted actions, scripts, and validated parameters.
+- Write operations require a dedicated request marker to block ordinary cross-site form requests.
+- Theme deletion is confined to the local theme library and preset themes are protected.
+- Child processes are launched with executable and argument arrays; `sh -c` is not used.
 
 ## Development and Verification
 
@@ -100,19 +153,20 @@ Start the Host Agent only:
 npm run agent
 ```
 
-When starting only the Web service, you must provide the Agent address and token file. For normal use, always run `scripts/start-local.sh`.
-
-Validate the container configuration:
+Validate or build the container:
 
 ```bash
 docker compose config
 docker compose build
 ```
 
-## Security Boundaries
+For normal use, run `scripts/start-local.sh`. Starting the Web service by itself also requires the Host Agent address and token file.
 
-- The API permits only predefined actions and script names.
-- The Host Agent rejects unauthenticated requests. Write operations also require a custom request marker to block ordinary cross-site form requests.
-- Theme IDs and enum parameters are validated. Theme deletion is strictly confined to the local theme library directory.
-- Child processes are started with executable and argument arrays; `sh -c` is not used.
-- CDP address validation, process identity checks, configuration backup, and restoration remain the responsibility of the original Codex Dream Skin engine.
+## Related Projects
+
+- [Codex Dream Skin](https://github.com/Fei-Away/Codex-Dream-Skin): theme engine, macOS scripts, and preset themes
+- [Codex Dream Skin Manager](https://github.com/StarRain/Codex-Dream-Skin-Manager): local management UI and Host Agent
+
+## Disclaimer
+
+This is a community project and is not officially affiliated with or endorsed by OpenAI. Codex is a trademark of its respective owner.
