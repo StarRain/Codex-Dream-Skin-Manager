@@ -15,6 +15,7 @@
   <img alt="Platform" src="https://img.shields.io/badge/platform-macOS-11151d">
   <img alt="Node.js" src="https://img.shields.io/badge/Node.js-%E2%89%A520-5fa04e">
   <img alt="Docker Compose" src="https://img.shields.io/badge/Docker-Compose-2496ed">
+  <a href="LICENSE"><img alt="License" src="https://img.shields.io/badge/license-MIT-8cff52"></a>
 </p>
 
 Codex Dream Skin Manager is an independent local Web GUI that manages themes, injection state, and the Codex connection through the macOS scripts supplied by the original project. It neither copies nor modifies the theme engine source code, and it does not modify the official Codex app.
@@ -166,6 +167,10 @@ For normal use, run `scripts/start-local.sh`. Starting the Web service by itself
 
 - [Codex Dream Skin](https://github.com/Fei-Away/Codex-Dream-Skin): theme engine, macOS scripts, and preset themes
 - [Codex Dream Skin Manager](https://github.com/StarRain/Codex-Dream-Skin-Manager): local management UI and Host Agent
+
+## License
+
+This project is released under the [MIT License](LICENSE), Copyright (c) 2026 StarRain.
 
 ## Disclaimer
 

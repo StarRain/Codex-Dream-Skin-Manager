@@ -15,6 +15,7 @@
   <img alt="Platform" src="https://img.shields.io/badge/platform-macOS-11151d">
   <img alt="Node.js" src="https://img.shields.io/badge/Node.js-%E2%89%A520-5fa04e">
   <img alt="Docker Compose" src="https://img.shields.io/badge/Docker-Compose-2496ed">
+  <a href="LICENSE"><img alt="License" src="https://img.shields.io/badge/license-MIT-8cff52"></a>
 </p>
 
 Codex Dream Skin Manager 是一个独立的本地 Web GUI，通过原项目提供的 macOS 脚本管理主题、注入状态与 Codex 连接。它不复制或修改主题引擎源码，也不修改官方 Codex 应用。
@@ -166,6 +167,10 @@ docker compose build
 
 - [Codex Dream Skin](https://github.com/Fei-Away/Codex-Dream-Skin)：主题引擎、macOS 脚本与预设主题
 - [Codex Dream Skin Manager](https://github.com/StarRain/Codex-Dream-Skin-Manager)：本地管理界面与 Host Agent
+
+## 开源协议
+
+本项目基于 [MIT License](LICENSE) 开源，Copyright (c) 2026 StarRain。
 
 ## 说明
 
