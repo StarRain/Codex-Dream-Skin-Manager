@@ -27,6 +27,8 @@ Codex Dream Skin Manager is an independent local Web GUI that manages themes, in
 
 ![Codex Dream Skin Manager overview](docs/images/overview.jpg)
 
+![Codex Dream Skin Manager theme library](docs/images/themes.jpg)
+
 ## Core Capabilities
 
 ### Theme Management

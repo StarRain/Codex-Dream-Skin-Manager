@@ -27,6 +27,8 @@ Codex Dream Skin Manager 是一个独立的本地 Web GUI，通过原项目提�
 
 ![Codex Dream Skin Manager 概览](docs/images/overview.jpg)
 
+![Codex Dream Skin Manager 主题库](docs/images/themes.jpg)
+
 ## 核心能力
 
 ### 主题管理
