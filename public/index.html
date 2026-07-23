@@ -6,14 +6,14 @@
   <meta name="color-scheme" content="dark">
   <title>Codex Dream Skin Manager</title>
   <meta name="description" content="Codex Dream Skin Manager 本地主题管理器">
-  <link rel="icon" type="image/png" href="/assets/codex-dream-skin-manager-logo-transparent.png?v=1.0.0">
-  <link rel="stylesheet" href="/styles.css?v=1.0.0-ui2">
+  <link rel="icon" type="image/png" href="/assets/codex-dream-skin-manager-logo-transparent.png?v=1.1.0">
+  <link rel="stylesheet" href="/styles.css?v=1.1.0-edit-groups">
 </head>
 <body>
   <div class="app-shell">
     <aside class="sidebar">
       <div class="brand">
-        <img class="brand-mark" src="/assets/codex-dream-skin-manager-logo-transparent.png?v=1.0.0" alt="">
+        <img class="brand-mark" src="/assets/codex-dream-skin-manager-logo-transparent.png?v=1.1.0" alt="">
         <div>
           <strong>CODEX DREAM SKIN</strong>
           <small><span>MANAGER</span><b id="brand-version">v—</b></small>
@@ -23,6 +23,7 @@
       <nav aria-label="主导航">
         <button class="nav-item active" data-section="overview"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>概览</button>
         <button class="nav-item" data-section="themes"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3-9 5 9 5 9-5-9-5Z"/><path d="m3 12 9 5 9-5"/><path d="m3 16 9 5 9-5"/></svg>主题库 <b id="theme-count">0</b></button>
+        <button class="nav-item" data-section="studio"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m14.7 6.3 3 3"/><path d="M4 20l3.5-.8L19 7.7a2.1 2.1 0 0 0-3-3L4.5 16.2 4 20Z"/><path d="M12 4H5a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2h13a2 2 0 0 0 2-2v-7"/></svg>制作主题</button>
         <button class="nav-item" data-section="logs"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/><path d="M12 7v5l3 2"/></svg>操作记录</button>
         <button class="nav-item" data-section="settings"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="2"/><rect x="9" y="9" width="6" height="6"/><path d="M9 1v3M15 1v3M9 20v3M15 20v3M20 9h3M20 15h3M1 9h3M1 15h3"/></svg>系统信息</button>
       </nav>
@@ -67,7 +68,8 @@
             <h1>让工作台，拥有<br><em>今天的氛围。</em></h1>
             <p>使用 Codex Dream Skin Manager 管理主题，运行状态全部留在你的 Mac。</p>
             <div class="hero-actions">
-              <button class="primary action-button" data-action="apply">应用当前皮肤 <span>→</span></button>
+              <button class="primary action-button" data-action="start">启动主引擎 <span>▶</span></button>
+              <button class="secondary action-button" data-action="apply">应用当前皮肤 <span>→</span></button>
               <button class="secondary action-button" data-action="pause">暂停注入</button>
             </div>
           </div>
@@ -116,8 +118,63 @@
 
       <section class="page" id="page-themes">
         <div class="page-heading"><div><span class="eyebrow">本地主题库</span><h2>主题库</h2><p>预设与自定义主题都保存在本机。</p></div></div>
-        <div class="theme-grid" id="theme-grid"></div>
+        <div class="theme-groups" id="theme-grid"></div>
         <div class="empty-state hidden" id="theme-empty"><div><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3-9 5 9 5 9-5-9-5Z"/><path d="m3 12 9 5 9-5"/><path d="m3 16 9 5 9-5"/></svg></div><h3>主题库还是空的</h3><p>请先安装带有预设主题的 Codex Dream Skin 引擎。</p></div>
+      </section>
+
+      <section class="page" id="page-studio">
+        <div class="page-heading"><div><span class="eyebrow">主题制作器</span><h2 id="studio-page-title">制作主题</h2><p id="studio-page-description">用一张图片创建兼容 Codex Dream Skin 的本地主题，并即时预览参数效果。</p></div></div>
+        <section class="theme-studio panel" id="theme-studio" aria-label="主题制作器">
+          <div class="theme-studio-layout">
+            <div class="theme-preview-column">
+              <div class="preview-route-tabs" role="group" aria-label="预览页面">
+                <button class="active" type="button" data-preview-route="home">首页预览</button>
+                <button type="button" data-preview-route="task">任务页预览</button>
+              </div>
+              <div class="theme-live-preview" id="theme-live-preview" data-route="home" data-task-mode="auto" data-safe-area="auto">
+                <img id="theme-preview-image" alt="主题图片预览">
+                <div class="preview-backdrop"></div>
+                <div class="preview-topbar"><span>Codex</span><i></i><i></i><i></i></div>
+                <aside class="preview-sidebar"><b>DS</b><span class="active"></span><span></span><span></span><span></span></aside>
+                <div class="preview-content">
+                  <div class="preview-safe-area" id="preview-safe-area"></div>
+                  <div class="preview-home-copy"><small>CODEX DREAM SKIN</small><strong id="preview-theme-name" data-no-localize>我的主题</strong><span>MAKE SOMETHING WONDERFUL</span><div class="preview-home-actions"><i></i><i></i></div><div class="preview-status-cards"><i></i><i></i><i></i></div></div>
+                  <div class="preview-task-copy"><div class="preview-task-title"><i></i><i></i></div><div class="preview-conversation"><span></span><span></span><span></span></div><div class="preview-composer"><i></i><b></b></div></div>
+                </div>
+              </div>
+              <p class="preview-note">预览用于观察构图和可读性；最终颜色与透明度会由引擎结合图片亮度和 Codex 页面自动计算。</p>
+            </div>
+
+            <form class="theme-studio-form" id="theme-studio-form">
+              <label class="image-picker" for="theme-image-input">
+                <input id="theme-image-input" type="file" accept="image/png,image/jpeg,image/webp,image/heic,image/heif,image/tiff,.heic,.tif,.tiff" required>
+                <span>选择主题图片</span>
+                <small id="theme-image-name" data-no-localize>PNG、JPEG、WebP、HEIC 或 TIFF，最大 50 MB</small>
+              </label>
+
+              <label class="studio-field"><span>主题名称</span><input id="theme-name-input" type="text" maxlength="80" value="我的主题" required><small>显示在主题库中，最多 80 个字符。</small></label>
+
+              <label class="studio-field"><span>主题分组</span><input id="theme-group-input" type="text" maxlength="40" placeholder="未分组" list="theme-group-suggestions"><small>用于整理主题库，最多 40 个字符。</small><datalist id="theme-group-suggestions"></datalist></label>
+
+              <div class="studio-fields two-columns">
+                <label class="studio-field"><span>外观模式</span><select id="theme-appearance"><option value="auto">自动</option><option value="light">亮色</option><option value="dark">暗色</option></select><small>自动会跟随 Codex 当前外观。</small></label>
+                <label class="studio-field"><span>安全留白</span><select id="theme-safe-area"><option value="auto">自动判断</option><option value="left">左侧</option><option value="right">右侧</option><option value="center">中间</option><option value="none">不指定</option></select><small>标记适合放置文字和控件的低信息区域。</small></label>
+              </div>
+
+              <label class="studio-field"><span>任务页图片模式</span><select id="theme-task-mode"><option value="auto">自动判断</option><option value="ambient">环境背景</option><option value="banner">顶部横幅</option><option value="off">任务页隐藏</option></select><small>只影响普通任务页；首页始终保留完整主题背景。</small></label>
+
+              <div class="focus-control">
+                <label class="check-row"><input id="theme-focus-auto" type="checkbox" checked><span><b>自动识别图片焦点</b><small>推荐。关闭后可手动指定主体中心位置。</small></span></label>
+                <label class="range-field"><span>水平焦点 <output id="theme-focus-x-value">50%</output></span><input id="theme-focus-x" type="range" min="0" max="100" value="50" disabled></label>
+                <label class="range-field"><span>垂直焦点 <output id="theme-focus-y-value">50%</output></span><input id="theme-focus-y" type="range" min="0" max="100" value="50" disabled></label>
+              </div>
+
+              <label class="check-row"><input id="theme-apply-now" type="checkbox" checked><span><b>保存后立即应用</b><small>可能会热更新主题；CDP 未连接时可能重启 Codex。</small></span></label>
+
+              <div class="studio-submit"><button class="secondary" id="reset-theme-studio" type="button">重置参数</button><button class="primary" id="save-theme" type="submit">保存主题</button></div>
+            </form>
+          </div>
+        </section>
       </section>
 
       <section class="page" id="page-logs">
@@ -146,6 +203,6 @@
   <div class="toast-stack" id="toast-stack" aria-live="polite"></div>
   <dialog id="confirm-dialog"><div class="dialog-mark">↶</div><h3>恢复官方外观？</h3><p>这会停止注入器、恢复基础主题配置并重启 Codex。你的本地主题库不会被删除。</p><div><button class="secondary" id="cancel-restore">取消</button><button class="danger-fill" id="confirm-restore">恢复并重启</button></div></dialog>
   <dialog id="delete-theme-dialog"><div class="dialog-mark">×</div><h3>删除这个主题？</h3><p>主题“<strong id="delete-theme-name"></strong>”及其本地文件将被永久删除，此操作无法撤销。</p><div><button class="secondary" id="cancel-delete-theme">取消</button><button class="danger-fill" id="confirm-delete-theme">确认删除</button></div></dialog>
-  <script type="module" src="/app.js?v=1.0.0-ui2"></script>
+  <script type="module" src="/app.js?v=1.1.0-edit-groups-2"></script>
 </body>
 </html>

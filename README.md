@@ -11,7 +11,7 @@
 </p>
 
 <p align="center">
-  <img alt="Version" src="https://img.shields.io/badge/version-v1.0.0-8cff52">
+  <img alt="Version" src="https://img.shields.io/badge/version-v1.1.0-8cff52">
   <img alt="Platform" src="https://img.shields.io/badge/platform-macOS-11151d">
   <img alt="Node.js" src="https://img.shields.io/badge/Node.js-%E2%89%A520-5fa04e">
   <img alt="Docker Compose" src="https://img.shields.io/badge/Docker-Compose-2496ed">
@@ -35,6 +35,8 @@ Codex Dream Skin Manager 是一个独立的本地 Web GUI，通过原项目提�
 
 - 浏览本地预设与自定义主题
 - 展示主题背景预览与当前主题
+- 从本地图片制作 `custom-*` 主题，并实时预览首页与任务页效果
+- 调整外观模式、安全留白、任务页图片模式和自动或手动焦点
 - 一键应用或重新应用主题
 - 删除自定义主题并进行二次确认
 - 保护预设主题和当前使用中的主题，防止误删
@@ -165,6 +167,7 @@ DREAM_SKIN_ENGINE="/absolute/path/to/Codex-Dream-Skin/macos" codex-dream-skin-ma
 - Docker 令牌文件权限为 `0600`，容器仅以只读方式挂载。
 - 容器不挂载 `~/.codex` 或 `~/Library/Application Support`。
 - API 只允许固定动作、固定脚本名和经过校验的参数。
+- 主题图片限制为引擎支持的格式和 50 MB，生成完成或失败后都会清理上传临时文件。
 - 写操作还需要专用请求标记，以阻止普通跨站表单请求。
 - 主题删除严格限制在本地主题库目录，并保护预设主题。
 - 子进程通过可执行文件和参数数组启动，不使用 `sh -c`。

@@ -32,6 +32,60 @@ export function clampText(value, maximum = 120) {
   return String(value ?? "").replace(/[\r\n\0]/g, " ").trim().slice(0, maximum);
 }
 
+export function themeGroup(value) {
+  return String(value ?? "")
+    .replace(/[\u0000-\u001f\u007f-\u009f\u2028\u2029]/gu, " ")
+    .trim()
+    .slice(0, 40) || "未分组";
+}
+
+export function themeImportOptions(value = {}) {
+  const name = clampText(value.name, 80);
+  if (!name) throw Object.assign(new Error("Theme name is required"), { statusCode: 400 });
+
+  const validateChoice = (field, allowed) => {
+    const selected = String(value[field] ?? "");
+    if (!allowed.includes(selected)) {
+      throw Object.assign(new Error(`Invalid ${field}`), { statusCode: 400 });
+    }
+    return selected;
+  };
+  const validateFocus = field => {
+    if (value[field] === "" || value[field] === null || value[field] === undefined) return null;
+    const number = Number(value[field]);
+    if (!Number.isFinite(number) || number < 0 || number > 1) {
+      throw Object.assign(new Error(`Invalid ${field}`), { statusCode: 400 });
+    }
+    return number;
+  };
+
+  return {
+    name,
+    group: themeGroup(value.group),
+    appearance: validateChoice("appearance", ["auto", "light", "dark"]),
+    safeArea: validateChoice("safeArea", ["auto", "left", "right", "center", "none"]),
+    taskMode: validateChoice("taskMode", ["auto", "ambient", "banner", "off"]),
+    focusX: validateFocus("focusX"),
+    focusY: validateFocus("focusY"),
+    applyNow: value.applyNow !== false && value.applyNow !== "false"
+  };
+}
+
+export function themeImageExtension(fileName, contentType = "") {
+  const mimeExtensions = {
+    "image/png": ".png",
+    "image/jpeg": ".jpg",
+    "image/webp": ".webp",
+    "image/heic": ".heic",
+    "image/heif": ".heic",
+    "image/tiff": ".tiff"
+  };
+  const byMime = mimeExtensions[String(contentType).split(";", 1)[0].trim().toLowerCase()];
+  if (byMime) return byMime;
+  const extension = path.extname(String(fileName)).toLowerCase();
+  return [".png", ".jpg", ".jpeg", ".webp", ".heic", ".tif", ".tiff"].includes(extension) ? extension : null;
+}
+
 export function normalizeStatus(value = {}) {
   const cdpOk = value.cdpOk === true;
   return {

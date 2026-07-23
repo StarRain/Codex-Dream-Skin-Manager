@@ -11,7 +11,7 @@
 </p>
 
 <p align="center">
-  <img alt="Version" src="https://img.shields.io/badge/version-v1.0.0-8cff52">
+  <img alt="Version" src="https://img.shields.io/badge/version-v1.1.0-8cff52">
   <img alt="Platform" src="https://img.shields.io/badge/platform-macOS-11151d">
   <img alt="Node.js" src="https://img.shields.io/badge/Node.js-%E2%89%A520-5fa04e">
   <img alt="Docker Compose" src="https://img.shields.io/badge/Docker-Compose-2496ed">
@@ -35,6 +35,8 @@ Codex Dream Skin Manager is an independent local Web GUI that manages themes, in
 
 - Browse local preset and custom themes
 - Preview theme backgrounds and identify the active theme
+- Create `custom-*` themes from local images with live home-page and task-page previews
+- Adjust appearance, safe area, task-page artwork mode, and automatic or manual focus
 - Apply or reapply a theme with one click
 - Delete custom themes with confirmation
 - Protect preset themes and the active theme from accidental deletion
@@ -165,6 +167,7 @@ DREAM_SKIN_ENGINE="/absolute/path/to/Codex-Dream-Skin/macos" codex-dream-skin-ma
 - The Docker token file uses `0600` permissions and is mounted read-only inside the container.
 - The container does not mount `~/.codex` or `~/Library/Application Support`.
 - The API permits only allowlisted actions, scripts, and validated parameters.
+- Theme images are limited to engine-supported formats and 50 MB; temporary uploads are removed after success or failure.
 - Write operations require a dedicated request marker to block ordinary cross-site form requests.
 - Theme deletion is confined to the local theme library and preset themes are protected.
 - Child processes are launched with executable and argument arrays; `sh -c` is not used.
